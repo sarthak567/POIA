@@ -107,18 +107,21 @@ git push
 ## 🐛 Troubleshooting
 
 ### "remote origin already exists"
+
 ```bash
 git remote remove origin
 git remote add origin https://github.com/YOUR_USERNAME/poia-app.git
 ```
 
 ### "failed to push some refs"
+
 ```bash
 git pull origin main --allow-unrelated-histories
 git push -u origin main
 ```
 
 ### Authentication Issues
+
 - Use GitHub Personal Access Token instead of password
 - Or use SSH keys for authentication
 
@@ -130,4 +133,3 @@ git push -u origin main
 ---
 
 **Ready to push?** Follow the steps above and your POIA project will be on GitHub! 🎉
-

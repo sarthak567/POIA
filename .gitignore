@@ -93,3 +93,4 @@ Icon
 # yarn.lock
 # pnpm-lock.yaml
 
+.env

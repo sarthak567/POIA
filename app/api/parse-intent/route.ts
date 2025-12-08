@@ -11,21 +11,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get Grok API key from environment
     const apiKey = process.env.NEXT_PUBLIC_AI_API_KEY;
     
     if (!apiKey) {
+      console.error("Grok API key not found in environment variables");
       return NextResponse.json(
-        { error: "AI API key not configured" },
+        { 
+          error: "AI API key not configured",
+          fallback: true,
+          ...parseIntentFallback(userInput)
+        },
         { status: 500 }
       );
     }
 
-    // Grok API endpoint (xAI) - Try multiple possible endpoints
-    // xAI uses different endpoints, try the most common one first
-    let apiUrl = "https://api.x.ai/v1/chat/completions";
+    // Grok API endpoint (xAI)
+    // xAI Grok API uses this endpoint
+    const apiUrl = "https://api.x.ai/v1/chat/completions";
     
-    // Alternative endpoint if the above doesn't work
-    // apiUrl = "https://api.grok.x.ai/v1/chat/completions";
+    console.log("Calling Grok API with key:", apiKey.substring(0, 10) + "...");
 
     // Create a detailed prompt for intent parsing
     const systemPrompt = `You are an expert AI assistant that parses user intentions for on-chain automation on Polygon blockchain. 
@@ -58,7 +63,7 @@ Extract all relevant information and return the JSON structure as specified.`;
         "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "grok-beta",
+        model: "grok-2", // Try grok-2 first, fallback to grok-beta if needed
         messages: [
           {
             role: "system",
@@ -71,16 +76,33 @@ Extract all relevant information and return the JSON structure as specified.`;
         ],
         temperature: 0.3,
         max_tokens: 1000,
+        response_format: { type: "json_object" }, // Request JSON response format
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error("Grok API error:", errorData);
+      console.error("Grok API error:", response.status, errorData);
+      
+      // Try to parse error for better feedback
+      let errorMessage = "Grok API request failed";
+      try {
+        const errorJson = JSON.parse(errorData);
+        errorMessage = errorJson.error?.message || errorMessage;
+      } catch (e) {
+        // Error is not JSON, use raw text
+      }
+      
+      console.error("Error details:", {
+        status: response.status,
+        statusText: response.statusText,
+        message: errorMessage
+      });
       
       // Fallback to rule-based parsing if API fails
       return NextResponse.json({
         fallback: true,
+        error: errorMessage,
         ...parseIntentFallback(userInput),
       });
     }
@@ -88,21 +110,35 @@ Extract all relevant information and return the JSON structure as specified.`;
     const data = await response.json();
     const aiResponse = data.choices?.[0]?.message?.content || "";
 
+    console.log("Grok API response received, length:", aiResponse.length);
+
     // Try to extract JSON from the response
     let parsedData;
     try {
-      // Look for JSON in the response
-      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        parsedData = JSON.parse(jsonMatch[0]);
+      // Look for JSON in the response (handle both plain JSON and markdown code blocks)
+      let jsonString = aiResponse;
+      
+      // Check if response is wrapped in markdown code blocks
+      const codeBlockMatch = aiResponse.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      if (codeBlockMatch) {
+        jsonString = codeBlockMatch[1];
       } else {
-        throw new Error("No JSON found in response");
+        // Try to find JSON object directly
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          jsonString = jsonMatch[0];
+        }
       }
+      
+      parsedData = JSON.parse(jsonString);
+      console.log("Successfully parsed Grok response");
     } catch (parseError) {
       console.error("Failed to parse AI response:", parseError);
+      console.error("Raw response:", aiResponse.substring(0, 500));
       // Fallback to rule-based parsing
       return NextResponse.json({
         fallback: true,
+        error: "Failed to parse AI response",
         ...parseIntentFallback(userInput),
       });
     }
