@@ -9,12 +9,18 @@ import { getContractAddresses, INTENT_NFT_ABI } from "@/lib/contracts";
 import { Loader2, CheckCircle2, ArrowLeft, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatAddress } from "@/lib/utils";
+import { Toast } from "@/components/Toast";
 
 export default function SummaryPage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const [parsedIntent, setParsedIntent] = useState<ParsedIntent | null>(null);
   const [intentHash, setIntentHash] = useState<string>("");
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" | "warning"; isVisible: boolean }>({
+    message: "",
+    type: "info",
+    isVisible: false,
+  });
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
@@ -59,11 +65,26 @@ export default function SummaryPage() {
 
   useEffect(() => {
     if (isSuccess) {
+      setToast({
+        message: "Intent NFT minted successfully! Redirecting to dashboard...",
+        type: "success",
+        isVisible: true,
+      });
       setTimeout(() => {
         router.push("/dashboard");
       }, 2000);
     }
   }, [isSuccess, router]);
+
+  useEffect(() => {
+    if (error) {
+      setToast({
+        message: `Error: ${error.message || "Failed to mint intent"}`,
+        type: "error",
+        isVisible: true,
+      });
+    }
+  }, [error]);
 
   if (!parsedIntent) {
     return (
@@ -228,6 +249,12 @@ export default function SummaryPage() {
           </div>
         </div>
       </div>
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => setToast({ ...toast, isVisible: false })}
+      />
     </PageLayout>
   );
 }

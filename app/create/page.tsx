@@ -6,6 +6,7 @@ import { PageLayout } from "@/components/PageLayout";
 import { parseIntent, type ParsedIntent } from "@/lib/ai-intent-parser";
 import { Sparkles, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Toast } from "@/components/Toast";
 
 const templates = [
   {
@@ -35,6 +36,11 @@ export default function CreateIntentPage() {
   const [input, setInput] = useState("");
   const [isParsing, setIsParsing] = useState(false);
   const [parsedIntent, setParsedIntent] = useState<ParsedIntent | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" | "warning"; isVisible: boolean }>({
+    message: "",
+    type: "info",
+    isVisible: false,
+  });
 
   // Check for template example from marketplace
   useEffect(() => {
@@ -46,20 +52,40 @@ export default function CreateIntentPage() {
   }, []);
 
   const handleParse = async () => {
-    if (!input.trim()) return;
+    if (!input.trim()) {
+      setToast({
+        message: "Please enter an intent description",
+        type: "warning",
+        isVisible: true,
+      });
+      return;
+    }
 
     setIsParsing(true);
     try {
       const result = await parseIntent(input);
       setParsedIntent(result);
       
-      // Show a message if fallback parser was used
       if (result.fallback) {
-        console.warn("Using fallback parser - AI API may be unavailable");
+        setToast({
+          message: "Using fallback parser - Grok API may be unavailable",
+          type: "warning",
+          isVisible: true,
+        });
+      } else {
+        setToast({
+          message: "Intent parsed successfully with Grok AI!",
+          type: "success",
+          isVisible: true,
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error parsing intent:", error);
-      alert("Failed to parse intent. Please try again or check your connection.");
+      setToast({
+        message: `Failed to parse intent: ${error.message || "Please try again"}`,
+        type: "error",
+        isVisible: true,
+      });
     } finally {
       setIsParsing(false);
     }
@@ -236,6 +262,12 @@ export default function CreateIntentPage() {
           </AnimatePresence>
         </div>
       </div>
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => setToast({ ...toast, isVisible: false })}
+      />
     </PageLayout>
   );
 }

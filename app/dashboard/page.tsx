@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { PageLayout } from "@/components/PageLayout";
 import { getContractAddresses, INTENT_NFT_ABI } from "@/lib/contracts";
 import { formatAddress, formatDate } from "@/lib/utils";
-import { Activity, Play, Pause, Trash2, ExternalLink, Sparkles } from "lucide-react";
+import { Activity, Play, Pause, Trash2, ExternalLink, Sparkles, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -21,8 +21,13 @@ export default function DashboardPage() {
   const { address, isConnected } = useAccount();
   const [userIntents, setUserIntents] = useState<IntentData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingIntent, setUpdatingIntent] = useState<string | null>(null);
 
   const contracts = getContractAddresses();
+  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+  });
 
   const { data: intentIds } = useReadContract({
     address: contracts.intentNFT,
@@ -36,22 +41,50 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchIntents = async () => {
-      if (!intentIds || !isConnected) {
+      if (!intentIds || !isConnected || !address) {
         setLoading(false);
         return;
       }
 
       try {
-        // In a real app, you'd fetch each intent's data
-        // For now, we'll create mock data
-        const intents: IntentData[] = (intentIds as bigint[]).map((id, idx) => ({
-          tokenId: id.toString(),
-          intentHash: `0x${id.toString(16).padStart(64, "0")}`,
-          createdAt: Date.now() / 1000 - idx * 86400, // Mock timestamps
-          isActive: idx % 3 !== 0, // Some inactive
-          executionCount: Math.floor(Math.random() * 10),
-        }));
-        setUserIntents(intents);
+        setLoading(true);
+        const ids = intentIds as bigint[];
+        
+        // Use viem to read contract data
+        const { createPublicClient, http } = await import("viem");
+        const { polygonAmoy } = await import("viem/chains");
+        
+        const publicClient = createPublicClient({
+          chain: polygonAmoy,
+          transport: http(process.env.NEXT_PUBLIC_AMOY_RPC_URL || "https://rpc-amoy.polygon.technology"),
+        });
+
+        // Fetch real data for each intent
+        const intentPromises = ids.map(async (id) => {
+          try {
+            const intentData = await publicClient.readContract({
+              address: contracts.intentNFT,
+              abi: INTENT_NFT_ABI,
+              functionName: "getIntent",
+              args: [id],
+            });
+
+            return {
+              tokenId: id.toString(),
+              intentHash: (intentData as any).intentHash,
+              createdAt: Number((intentData as any).createdAt),
+              isActive: (intentData as any).isActive,
+              executionCount: Number((intentData as any).executionCount),
+            };
+          } catch (error) {
+            console.error(`Error fetching intent ${id}:`, error);
+            return null;
+          }
+        });
+        
+        const results = await Promise.all(intentPromises);
+        const validIntents = results.filter((intent): intent is IntentData => intent !== null);
+        setUserIntents(validIntents);
       } catch (error) {
         console.error("Error fetching intents:", error);
       } finally {
@@ -60,7 +93,73 @@ export default function DashboardPage() {
     };
 
     fetchIntents();
-  }, [intentIds, isConnected]);
+  }, [intentIds, isConnected, address, contracts.intentNFT]);
+
+  // Refresh intents after successful update
+  useEffect(() => {
+    if (isSuccess && intentIds) {
+      // Refetch intents
+      const fetchIntents = async () => {
+        if (!intentIds || !isConnected || !address) return;
+        try {
+          const ids = intentIds as bigint[];
+          const { createPublicClient, http } = await import("viem");
+          const { polygonAmoy } = await import("viem/chains");
+          
+          const publicClient = createPublicClient({
+            chain: polygonAmoy,
+            transport: http(process.env.NEXT_PUBLIC_AMOY_RPC_URL || "https://rpc-amoy.polygon.technology"),
+          });
+
+          const intentPromises = ids.map(async (id) => {
+            try {
+              const intentData = await publicClient.readContract({
+                address: contracts.intentNFT,
+                abi: INTENT_NFT_ABI,
+                functionName: "getIntent",
+                args: [id],
+              });
+
+              return {
+                tokenId: id.toString(),
+                intentHash: (intentData as any).intentHash,
+                createdAt: Number((intentData as any).createdAt),
+                isActive: (intentData as any).isActive,
+                executionCount: Number((intentData as any).executionCount),
+              };
+            } catch (error) {
+              return null;
+            }
+          });
+          
+          const results = await Promise.all(intentPromises);
+          const validIntents = results.filter((intent): intent is IntentData => intent !== null);
+          setUserIntents(validIntents);
+        } catch (error) {
+          console.error("Error refreshing intents:", error);
+        }
+        setUpdatingIntent(null);
+      };
+      fetchIntents();
+    }
+  }, [isSuccess, intentIds, isConnected, address, contracts.intentNFT]);
+
+  const handleToggleIntent = async (tokenId: string, newStatus: boolean) => {
+    if (!isConnected || !address) return;
+    
+    setUpdatingIntent(tokenId);
+    try {
+      writeContract({
+        address: contracts.intentNFT,
+        abi: INTENT_NFT_ABI,
+        functionName: "setIntentStatus",
+        args: [BigInt(tokenId), newStatus],
+      });
+    } catch (error) {
+      console.error("Error toggling intent:", error);
+      setUpdatingIntent(null);
+    }
+  };
 
   if (!isConnected) {
     return (
@@ -196,10 +295,14 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
                       <button
-                        className="p-2 glass rounded-lg hover:bg-white/10 transition-colors"
+                        onClick={() => handleToggleIntent(intent.tokenId, !intent.isActive)}
+                        disabled={updatingIntent === intent.tokenId || isPending || isConfirming}
+                        className="p-2 glass rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title={intent.isActive ? "Pause" : "Resume"}
                       >
-                        {intent.isActive ? (
+                        {updatingIntent === intent.tokenId ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : intent.isActive ? (
                           <Pause className="w-5 h-5" />
                         ) : (
                           <Play className="w-5 h-5" />

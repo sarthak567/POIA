@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { PageLayout } from "@/components/PageLayout";
+import { HowItWorks } from "@/components/HowItWorks";
 import { ArrowRight, Sparkles, Shield, Zap, Globe, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -112,65 +113,7 @@ export default function Home() {
       </section>
 
       {/* How it Works Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-black/20">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">How It Works</h2>
-          </motion.div>
-
-          <div className="space-y-8">
-            {[
-              {
-                step: "1",
-                title: "User Declares Intent",
-                description: "Type or speak your instruction. Example: 'Invest my USDC into the highest-yield stablecoin pool every Monday.'",
-              },
-              {
-                step: "2",
-                title: "AI Converts Intent → Executable Plan",
-                description: "The AI automatically generates smart contract call sequences, risk constraints, frequency rules, and safety guards.",
-              },
-              {
-                step: "3",
-                title: "Intent Is Minted On-Chain",
-                description: "It becomes a Proof-of-Intent NFT containing encrypted intent, execution rules, constraints, and AI signature.",
-              },
-              {
-                step: "4",
-                title: "Polygon Agent Executors Carry Out Actions",
-                description: "Execution agents read the intent NFT and perform recurring investments, automated payments, and conditional actions.",
-              },
-              {
-                step: "5",
-                title: "User Monitors Everything",
-                description: "Real-time logs, status, next actions, and all AI reasoning is visible in your dashboard.",
-              },
-            ].map((step, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: idx * 0.1 }}
-                className="glass p-6 rounded-xl flex items-start space-x-6"
-              >
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-primary-600 to-accent-600 rounded-full flex items-center justify-center font-bold text-lg">
-                  {step.step}
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                  <p className="text-gray-300">{step.description}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HowItWorks />
 
       {/* Features Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
