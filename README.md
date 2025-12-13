@@ -8,11 +8,12 @@ POIA transforms user intentions into verifiable on-chain actions using AI agents
 
 ## ✨ Features
 
-- **Natural Language Intent Creator** - Express your automation goals in plain English
-- **Proof-of-Intent NFT** - Every intent is minted as a tamper-proof NFT on Polygon
-- **Automated Execution** - AI agents safely execute intents with cryptographic guarantees
+- **Natural Language Intent Creator** - Express your automation goals in plain English using Gemini AI
+- **Proof-of-Intent NFT** - Every intent is minted as a tamper-proof NFT on Polygon Amoy
+- **24+ Automation Templates** - Pre-built templates for DCA, yield farming, stop-loss, and more
 - **Intent Marketplace** - Browse and mint popular automation templates
 - **Real-time Activity Logs** - Monitor all executions with full transparency
+- **Live Crypto Prices** - Real-time price data from CoinCap API
 - **Modern 3D UI** - Beautiful, futuristic interface with glassmorphism effects
 
 ## 🛠️ Tech Stack
@@ -20,49 +21,57 @@ POIA transforms user intentions into verifiable on-chain actions using AI agents
 - **Frontend**: Next.js 14, TypeScript, TailwindCSS, Framer Motion
 - **Web3**: Wagmi, Viem, RainbowKit
 - **Smart Contracts**: Solidity, Hardhat, OpenZeppelin
-- **Network**: Polygon (Mainnet & Mumbai Testnet)
+- **AI**: Google Gemini API
+- **Network**: Polygon Amoy Testnet (Chain ID: 80002)
 
 ## 📦 Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <your-repo-url>
    cd pol2
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Fill in your `.env` file with:
+
+   Create a `.env` file in the root directory:
+
    ```env
-   # Polygon Network Configuration
-   POLYGON_RPC_URL=https://polygon-rpc.com
-   MUMBAI_RPC_URL=https://rpc-mumbai.maticvigil.com
-   
+   # Polygon Amoy Testnet RPC URL
+   NEXT_PUBLIC_AMOY_RPC_URL=https://polygon-amoy.g.alchemy.com/v2/YOUR_API_KEY
+   AMOY_RPC_URL=https://polygon-amoy.g.alchemy.com/v2/YOUR_API_KEY
+
    # Private Key (for deployment - NEVER commit to git)
    PRIVATE_KEY=your_private_key_here
-   
+
    # Contract Addresses (after deployment)
-   NEXT_PUBLIC_INTENT_NFT_ADDRESS=
-   NEXT_PUBLIC_EXECUTION_REGISTRY_ADDRESS=
-   
-   # Polygon Chain ID
-   NEXT_PUBLIC_CHAIN_ID=137
-   
+   NEXT_PUBLIC_INTENT_NFT_ADDRESS=0x...
+   NEXT_PUBLIC_EXECUTION_REGISTRY_ADDRESS=0x...
+
+   # Chain ID
+   NEXT_PUBLIC_CHAIN_ID=80002
+
    # WalletConnect Project ID (get from https://cloud.walletconnect.com)
    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
+
+   # Gemini AI API Key (get from https://aistudio.google.com)
+   NEXT_PUBLIC_AI_API_KEY=your_gemini_api_key
+
+   # CoinCap API Key (optional - for higher rate limits)
+   NEXT_PUBLIC_COINCAP_API_KEY=your_coincap_api_key
    ```
 
 ## 🏗️ Development
 
 1. **Start the development server**
+
    ```bash
    npm run dev
    ```
@@ -77,28 +86,22 @@ POIA transforms user intentions into verifiable on-chain actions using AI agents
 
 ## 📝 Smart Contract Deployment
 
-### Prerequisites
-
-- A wallet with MATIC tokens for gas fees
-- Private key of the deployment wallet
-- RPC URL for Polygon network
-
-### Deploy to Polygon Mumbai (Testnet)
+### Deploy to Polygon Amoy (Testnet)
 
 1. **Get testnet MATIC**
+
    - Visit [Polygon Faucet](https://faucet.polygon.technology/)
+   - Select "Amoy" testnet
    - Request testnet MATIC to your wallet
 
-2. **Update Hardhat config**
-   - Ensure your `.env` has `MUMBAI_RPC_URL` and `PRIVATE_KEY`
+2. **Update `.env`**
+
+   - Ensure your `.env` has `AMOY_RPC_URL` and `PRIVATE_KEY`
 
 3. **Deploy contracts**
+
    ```bash
-   npm run deploy
-   ```
-   Or specifically to Mumbai:
-   ```bash
-   npx hardhat run scripts/deploy.ts --network mumbai
+   npx hardhat run scripts/deploy.js --network amoy
    ```
 
 4. **Save contract addresses**
@@ -112,14 +115,20 @@ POIA transforms user intentions into verifiable on-chain actions using AI agents
 ### Deploy to Polygon Mainnet
 
 1. **Ensure you have mainnet MATIC**
+
    - You'll need MATIC for gas fees (recommended: 0.1+ MATIC)
 
-2. **Deploy contracts**
+2. **Update Hardhat config**
+
+   - Add mainnet RPC URL to `.env`: `POLYGON_RPC_URL=...`
+
+3. **Deploy contracts**
+
    ```bash
-   npx hardhat run scripts/deploy.ts --network polygon
+   npx hardhat run scripts/deploy.js --network polygon
    ```
 
-3. **Update environment variables**
+4. **Update environment variables**
    - Add the mainnet contract addresses to your `.env`
    - Update `NEXT_PUBLIC_CHAIN_ID=137` for mainnet
 
@@ -127,57 +136,59 @@ POIA transforms user intentions into verifiable on-chain actions using AI agents
 
 ### 1. WalletConnect Project ID
 
-**What**: Project ID for WalletConnect integration
-
 **Where to get it**:
+
 1. Visit [WalletConnect Cloud](https://cloud.walletconnect.com)
 2. Sign up or log in
 3. Create a new project
 4. Copy the Project ID
 5. Add to `.env`: `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id`
 
-**Why**: Enables wallet connection via RainbowKit
-
 ### 2. Polygon RPC URL
 
-**What**: RPC endpoint for interacting with Polygon network
-
 **Where to get it**:
-- **Free Options**:
-  - [Polygon Public RPC](https://polygon-rpc.com) (rate-limited)
-  - [Alchemy](https://www.alchemy.com/) - Free tier available
-  - [Infura](https://www.infura.io/) - Free tier available
-  - [QuickNode](https://www.quicknode.com/) - Free tier available
 
-**Recommended**: Use Alchemy or Infura for better reliability
+- **Alchemy**: [alchemy.com](https://www.alchemy.com/) - Free tier available
+- **Infura**: [infura.io](https://www.infura.io/) - Free tier available
+- **QuickNode**: [quicknode.com](https://www.quicknode.com/) - Free tier available
+
+**Recommended**: Use Alchemy for better reliability
 
 **How to set up**:
-1. Sign up for Alchemy/Infura
-2. Create a new Polygon app
+
+1. Sign up for Alchemy
+2. Create a new Polygon Amoy app
 3. Copy the HTTPS RPC URL
-4. Add to `.env`: `POLYGON_RPC_URL=https://polygon-mainnet.g.alchemy.com/v2/YOUR_API_KEY`
+4. Add to `.env`: `NEXT_PUBLIC_AMOY_RPC_URL=https://polygon-amoy.g.alchemy.com/v2/YOUR_API_KEY`
 
-### 3. AI Service (Optional - for production)
-
-**What**: AI service for intent parsing (currently uses simulated parsing)
+### 3. Gemini AI API Key
 
 **Where to get it**:
-- **OpenAI API**: [platform.openai.com](https://platform.openai.com)
-- **Anthropic Claude**: [console.anthropic.com](https://console.anthropic.com)
-- **Google Gemini**: [makersuite.google.com](https://makersuite.google.com)
 
-**How to integrate**:
-1. Get API key from your chosen provider
-2. Update `lib/ai-intent-parser.ts` to use the actual API
-3. Add API key to `.env`: `NEXT_PUBLIC_AI_API_KEY=your_api_key`
+1. Visit [Google AI Studio](https://aistudio.google.com)
+2. Sign in with your Google account
+3. Click "Get API Key"
+4. Create a new API key
+5. Add to `.env`: `NEXT_PUBLIC_AI_API_KEY=your_gemini_api_key`
 
-**Note**: The current implementation uses rule-based parsing for demonstration. For production, integrate a real LLM API.
+**Why**: Powers the AI intent parsing feature
+
+### 4. CoinCap API Key (Optional)
+
+**Where to get it**:
+
+1. Visit [CoinCap API](https://coincapapi.mintlify.app/api-reference/request-API-Key)
+2. Request an API key
+3. Add to `.env`: `NEXT_PUBLIC_COINCAP_API_KEY=your_api_key`
+
+**Why**: Provides real-time cryptocurrency prices (works without key, but has rate limits)
 
 ## 🚢 Production Deployment
 
 ### Deploy Frontend to Vercel
 
 1. **Push to GitHub**
+
    ```bash
    git add .
    git commit -m "Initial commit"
@@ -187,7 +198,7 @@ POIA transforms user intentions into verifiable on-chain actions using AI agents
 2. **Deploy to Vercel**
    - Visit [vercel.com](https://vercel.com)
    - Import your GitHub repository
-   - Add environment variables in Vercel dashboard
+   - Add all environment variables in Vercel dashboard
    - Deploy
 
 ### Deploy Smart Contracts
@@ -201,8 +212,11 @@ pol2/
 ├── app/                    # Next.js app directory
 │   ├── create/            # Intent creation pages
 │   ├── dashboard/         # User dashboard
-│   ├── marketplace/      # Intent templates
+│   ├── marketplace/      # Intent templates (24+ templates)
 │   ├── activity/         # Execution logs
+│   ├── api/              # API routes
+│   │   ├── parse-intent/ # Gemini AI integration
+│   │   └── crypto-prices/# CoinCap API integration
 │   └── layout.tsx        # Root layout
 ├── components/            # React components
 ├── contracts/            # Solidity smart contracts
@@ -215,15 +229,19 @@ pol2/
 
 1. **Never commit private keys** - Always use `.env` files
 2. **Verify contract addresses** - Double-check before deploying
-3. **Test on testnet first** - Always test on Mumbai before mainnet
+3. **Test on testnet first** - Always test on Amoy before mainnet
 4. **Review smart contracts** - Consider getting an audit for production
 5. **Rate limiting** - Implement rate limiting for production APIs
+6. **API keys** - Keep all API keys secure and never expose them
 
 ## 🧪 Testing
 
 ```bash
-# Run tests (when implemented)
-npm test
+# Compile contracts
+npm run compile
+
+# Deploy to testnet
+npx hardhat run scripts/deploy.js --network amoy
 
 # Test smart contracts
 npx hardhat test
@@ -231,11 +249,43 @@ npx hardhat test
 
 ## 📖 Usage Guide
 
-1. **Connect Wallet**: Click "Connect Wallet" in the navbar
-2. **Create Intent**: Go to "Create Intent" and describe what you want to automate
-3. **Review & Mint**: Review the parsed intent and mint as NFT
-4. **Monitor**: View your intents in the Dashboard
-5. **Track Activity**: Check execution logs in Activity page
+1. **Connect Wallet**: Click "Connect Wallet" in the navbar (switch to Polygon Amoy)
+2. **Browse Templates**: Visit Marketplace to see 24+ automation templates
+3. **Create Intent**: Go to "Create Intent" and describe what you want to automate
+4. **AI Parsing**: Gemini AI will parse your intent and extract actions, frequency, and risks
+5. **Review & Mint**: Review the parsed intent and mint as Proof-of-Intent NFT
+6. **Monitor**: View your intents in the Dashboard
+7. **Track Activity**: Check execution logs in Activity page
+
+## 🎯 Features in Detail
+
+### Intent Marketplace
+
+- 24+ pre-built automation templates
+- Categories: DeFi, Trading, Risk, Payments, Savings, DAO, NFT, Optimization
+- Search and filter functionality
+- Sort by popularity or newest
+
+### AI Intent Parsing
+
+- Powered by Google Gemini AI
+- Automatic retry on failures
+- Enhanced fallback parser for all template types
+- Real-time crypto price context
+
+### Dashboard
+
+- View all your minted intents
+- Pause/resume intents
+- Track execution counts
+- Links to PolygonScan
+
+### Activity Logs
+
+- Real-time execution history
+- Transaction hashes
+- Success/failure status
+- Detailed execution data
 
 ## 🤝 Contributing
 
@@ -251,13 +301,17 @@ MIT License
 ## 🆘 Support
 
 For issues and questions:
+
 - Open an issue on GitHub
 - Check the documentation
 - Contact the development team
 
 ## 🎯 Roadmap
 
-- [ ] Real AI integration (OpenAI/Anthropic)
+- [x] Gemini AI integration
+- [x] CoinCap API for real prices
+- [x] 24+ automation templates
+- [x] Polygon Amoy deployment
 - [ ] Executor node network
 - [ ] Advanced intent templates
 - [ ] Multi-chain support
@@ -268,4 +322,3 @@ For issues and questions:
 ---
 
 Built with ❤️ for the Polygon ecosystem
-

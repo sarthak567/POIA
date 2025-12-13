@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CryptoPriceDisplay } from "./CryptoPriceDisplay";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -46,6 +47,9 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center space-x-4">
+            <div className="hidden lg:block">
+              <CryptoPriceDisplay symbols={["ETH", "MATIC"]} showChange={false} />
+            </div>
             <ConnectButton />
           </div>
         </div>

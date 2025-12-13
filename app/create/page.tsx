@@ -68,13 +68,13 @@ export default function CreateIntentPage() {
       
       if (result.fallback) {
         setToast({
-          message: "Using fallback parser - Grok API may be unavailable",
+          message: "Using fallback parser - Gemini API may be unavailable",
           type: "warning",
           isVisible: true,
         });
       } else {
         setToast({
-          message: "Intent parsed successfully with Grok AI!",
+          message: "Intent parsed successfully with Gemini AI!",
           type: "success",
           isVisible: true,
         });
@@ -148,7 +148,7 @@ export default function CreateIntentPage() {
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5" />
-                    <span>Parse Intent with AI</span>
+                    <span>Parse Intent with Gemini AI</span>
                   </>
                 )}
               </button>

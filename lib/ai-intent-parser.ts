@@ -1,5 +1,6 @@
-// AI Intent Parser - Uses Grok API for real AI parsing
+// AI Intent Parser - Uses Gemini API for real AI parsing
 // Falls back to rule-based parsing if API is unavailable
+// Uses CoinCap API for real cryptocurrency price data
 
 export interface ParsedIntent {
   intent: string;

@@ -26,8 +26,8 @@ export default function Home() {
               It executes on-chain — safely and automatically.
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              POIA transforms user intentions into verifiable on-chain actions using AI agents,
-              creating a new automation infrastructure for Web3.
+              POIA transforms user intentions into verifiable on-chain actions using Gemini AI,
+              creating a new automation infrastructure for Web3 on Polygon.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

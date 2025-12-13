@@ -8,6 +8,7 @@ import { getContractAddresses, EXECUTION_REGISTRY_ABI } from "@/lib/contracts";
 import { formatAddress, formatDate } from "@/lib/utils";
 import { Activity, CheckCircle2, XCircle, Clock, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 interface Execution {
   intentId: string;
@@ -39,37 +40,11 @@ export default function ActivityPage() {
 
   useEffect(() => {
     const fetchExecutions = async () => {
-      if (!executionHistory) {
-        // Mock data for demonstration
-        const mockExecutions: Execution[] = [
-          {
-            intentId: intentId || "1",
-            executor: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-            timestamp: Date.now() / 1000 - 3600,
-            success: true,
-            txHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-            resultData: '{"amount": "100 USDC", "pool": "USDC/USDT", "apy": "5.2%"}',
-          },
-          {
-            intentId: intentId || "1",
-            executor: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-            timestamp: Date.now() / 1000 - 7200,
-            success: true,
-            txHash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-            resultData: '{"amount": "100 USDC", "pool": "USDC/USDT", "apy": "5.1%"}',
-          },
-          {
-            intentId: intentId || "1",
-            executor: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-            timestamp: Date.now() / 1000 - 10800,
-            success: false,
-            txHash: "0x9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba",
-            resultData: '{"error": "Insufficient balance"}',
-          },
-        ];
-        setExecutions(mockExecutions);
+      if (!executionHistory || (executionHistory as any[]).length === 0) {
+        // No execution history from contract yet - show empty state
+        setExecutions([]);
       } else {
-        // Parse real execution history
+        // Parse real execution history from contract
         const parsed = (executionHistory as any[]).map((exec) => ({
           intentId: exec.intentId.toString(),
           executor: exec.executor,
@@ -115,9 +90,19 @@ export default function ActivityPage() {
             >
               <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-2xl font-semibold mb-2">No Executions Yet</h3>
-              <p className="text-gray-400">
-                Execution history will appear here once your intents start running
+              <p className="text-gray-400 mb-4">
+                {intentId 
+                  ? `No execution history found for Intent #${intentId}. Executions will appear here once the intent starts running.`
+                  : "Execution history will appear here once your intents start running. Executions are recorded on-chain when AI agents execute your intents."}
               </p>
+              {intentId && (
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center space-x-2 px-4 py-2 glass hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <span>Back to Dashboard</span>
+                </Link>
+              )}
             </motion.div>
           ) : (
             <div className="space-y-4">
