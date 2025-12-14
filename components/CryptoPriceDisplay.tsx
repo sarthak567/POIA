@@ -88,3 +88,4 @@ export function CryptoPriceDisplay({ symbols = ["ETH", "BTC", "MATIC"], showChan
   );
 }
 
+
