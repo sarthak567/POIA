@@ -6,6 +6,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 const COINCAP_API_URL = "https://api.coincap.io/v2";
 
+// Mark this route as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

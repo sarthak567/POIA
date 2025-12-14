@@ -44,7 +44,10 @@ export const INTENT_NFT_ABI = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+    inputs: [
+      { internalType: "uint256", name: "tokenId", type: "uint256" },
+      { internalType: "bool", name: "active", type: "bool" },
+    ],
     name: "setIntentStatus",
     outputs: [],
     stateMutability: "nonpayable",

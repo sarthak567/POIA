@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAccount, useReadContract } from "wagmi";
 import { PageLayout } from "@/components/PageLayout";
@@ -19,7 +19,7 @@ interface Execution {
   resultData: string;
 }
 
-export default function ActivityPage() {
+function ActivityContent() {
   const searchParams = useSearchParams();
   const intentId = searchParams.get("intent");
   const { address, isConnected } = useAccount();
@@ -170,6 +170,20 @@ export default function ActivityPage() {
         </div>
       </div>
     </PageLayout>
+  );
+}
+
+export default function ActivityPage() {
+  return (
+    <Suspense fallback={
+      <PageLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <Activity className="w-8 h-8 animate-spin text-primary-400" />
+        </div>
+      </PageLayout>
+    }>
+      <ActivityContent />
+    </Suspense>
   );
 }
 
